@@ -25,9 +25,8 @@ class camera {
 
 public:
 	camera() = delete;
-	camera(vec3 position, view_port view_port, float near, float far, float fov, float aspect_ratio) :
+	camera(vec3 position, float near, float far, float fov, float aspect_ratio) :
 		_position(position),
-		_view_port(view_port),
 		_fov(fov),
 		_near(near),
 		_far(far),
@@ -49,7 +48,7 @@ public:
 	void set_position(const vec3& pos) { _position = pos; }
 	float near() const { return _near; }
 	double focus_distance() const { return focus_dist; }
-	view_port get_view_port() const { return _view_port; }
+
 
 	vec3 forward() const { return _forward; }
 	vec3 right() const { return _right; }
@@ -101,7 +100,7 @@ public:
 	// ray tracing
 	int sample_count{ 10 };
 	int bounce{ 10 };
-
+	color  background;               // Scene background color
 
 
 	void render(cv::Mat* buffer, const hittable_list& world, int tile_size = 128)
@@ -127,7 +126,6 @@ public:
 			const int horizontal_count = std::ceil((double)buffer->cols / tile_size);
 			const int vertical_count = std::ceil((double)buffer->rows / tile_size);
 
-			std::cout << " ######## start render ######## \n";
 			auto start_clock = clock();
 
 			for (int i = 0; i < vertical_count; ++i)
@@ -198,8 +196,6 @@ private:
 	vec3 _right = vec3(1, 0, 0);
 	vec3 _up = vec3(0, 1, 0);
 
-	view_port _view_port;
-
 	double defocus_angle = 0;  // Variation angle of rays through each pixel
 	double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
@@ -224,19 +220,22 @@ private:
 
 		hit_record rec;
 
-		if (world.hit(r, interval(0.001, infinity), rec))
-		{
-			ray scattered;
-			color attenuation;
-			if (rec.mat->scatter(r, rec, attenuation, scattered))
-			{
-				return attenuation * ray_cast(scattered, world, bounce - 1);
-			}
+		// If the ray hits nothing, return the background color.
+		if (!world.hit(r, interval(0.001, infinity), rec))
+			return background;
 
-			return color(0, 0, 0);
-		}
+		
 
-		return sky_color(r);
+		ray scattered;
+		color attenuation;
+		color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
+
+		if (!rec.mat->scatter(r, rec, attenuation, scattered))
+			return color_from_emission;
+
+		color color_from_scatter = attenuation * ray_cast(scattered, world, bounce - 1);
+
+		return color_from_emission + color_from_scatter;
 	}
 
 

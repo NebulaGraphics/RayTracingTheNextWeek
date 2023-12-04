@@ -15,6 +15,7 @@
 #include "sphere.h"
 #include "bvh_node.h"
 #include "texture.h"
+#include "quad.h"
 
 #if _DEBUG
 #pragma comment(lib,"opencv_world481d.lib")
@@ -94,6 +95,56 @@ void two_perlin_spheres(hittable_list& world) {
 	world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
 
 }
+
+void quads(hittable_list& world) {
+	
+
+	// Materials
+	auto left_red = make_shared<lambertian>(color(1.0, 0.2, 0.2));
+	auto back_green = make_shared<lambertian>(color(0.2, 1.0, 0.2));
+	auto right_blue = make_shared<lambertian>(color(0.2, 0.2, 1.0));
+	auto upper_orange = make_shared<lambertian>(color(1.0, 0.5, 0.0));
+	auto lower_teal = make_shared<lambertian>(color(0.2, 0.8, 0.8));
+
+	// Quads
+	world.add(make_shared<quad>(point3(-3, -2, 5), vec3(0, 0, -4), vec3(0, 4, 0), left_red));
+	world.add(make_shared<quad>(point3(-2, -2, 0), vec3(4, 0, 0), vec3(0, 4, 0), back_green));
+	world.add(make_shared<quad>(point3(3, -2, 1), vec3(0, 0, 4), vec3(0, 4, 0), right_blue));
+	world.add(make_shared<quad>(point3(-2, 3, 1), vec3(4, 0, 0), vec3(0, 0, 4), upper_orange));
+	world.add(make_shared<quad>(point3(-2, -3, 5), vec3(4, 0, 0), vec3(0, 0, -4), lower_teal));
+
+}
+
+void simple_light(hittable_list& world) {
+	
+	auto pertext = make_shared<noise_texture>(4);
+	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+	world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
+
+	auto difflight = make_shared<diffuse_light>(color(4, 4, 4));
+	world.add(make_shared<quad>(point3(3, 1, -2), vec3(2, 0, 0), vec3(0, 2, 0), difflight));
+	world.add(make_shared<sphere>(point3(0, 7, 0), 2, difflight));
+
+}
+
+void cornell_box(hittable_list& world) {
+	
+	auto red = make_shared<lambertian>(color(.65, .05, .05));
+	auto white = make_shared<lambertian>(color(.73, .73, .73));
+	auto green = make_shared<lambertian>(color(.12, .45, .15));
+	auto light = make_shared<diffuse_light>(color(15, 15, 15));
+
+	world.add(make_shared<quad>(point3(555, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), green));
+	world.add(make_shared<quad>(point3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), red));
+	world.add(make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), light));
+	world.add(make_shared<quad>(point3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555), white));
+	world.add(make_shared<quad>(point3(555, 555, 555), vec3(-555, 0, 0), vec3(0, 0, -555), white));
+	world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
+
+	world.add(box(point3(130, 0, 65), point3(295, 165, 230), white));
+	world.add(box(point3(265, 0, 295), point3(430, 330, 460), white));
+}
+
 int main(int argc, char* argv[])
 {
 
@@ -105,7 +156,7 @@ int main(int argc, char* argv[])
 
 	hittable_list world;
 	
-	std::cout << " Input a number (0 ~ 3) to select scene:\n";
+	std::cout << " Input a number (0 ~ 6) to select scene:\n";
 	int scene_selection = -1;
 	std::cin >> scene_selection;
 	switch (scene_selection)
@@ -122,6 +173,15 @@ int main(int argc, char* argv[])
 	case 3:
 		two_perlin_spheres(world);
 		break;
+	case 4:
+		quads(world);
+		break;
+	case 5:
+		simple_light(world);
+		break;
+	case 6:
+		cornell_box(world);
+		break;
 	default:
 		return 0;
 	}
@@ -130,7 +190,7 @@ int main(int argc, char* argv[])
 
 	cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
 
-	const float aspect_ratio = 16.0f / 9.0f;
+	const float aspect_ratio = 1;
 	const int height = 300;
 	const int width = (int)(height * aspect_ratio);
 	auto buffer = new cv::Mat(height, width, CV_8UC3);
@@ -142,8 +202,7 @@ int main(int argc, char* argv[])
 	world = hittable_list(make_shared<bvh_node>(world));
 
 	camera main_camera(
-		vec3{ 13, 2, 3 },               // position
-		view_port{ 0, 0, 1, 1 },        // view port 
+		vec3{ 0, 0, 9 },               // position
 		0.1f,                           // near
 		10000.f,                       // far
 		20.f,                          // fov
@@ -151,13 +210,14 @@ int main(int argc, char* argv[])
 	);
 
 
-	main_camera.set_fov(20);
-	main_camera.set_position(vec3(13, 2, 3));
-	main_camera.look_at(vec3(0, 0, 0));
-	main_camera.set_defocus_angle(0.02);
+	main_camera.set_fov(40);
+	main_camera.set_position(vec3(278, 278, -800));
+	main_camera.look_at(vec3(278, 278, 0));
+	main_camera.set_defocus_angle(0.0);
 	main_camera.set_focus_dist(10);
-	main_camera.sample_count = 10;
-	main_camera.bounce = 20;
+	main_camera.sample_count = 300;
+	main_camera.bounce = 50;
+	main_camera.background = color(0, 0, 0);
 
 	main_camera.render(buffer, world, 128);
 
