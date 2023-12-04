@@ -62,5 +62,11 @@
     <ClInclude Include="rtw_stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="perlin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

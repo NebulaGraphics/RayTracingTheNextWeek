@@ -87,6 +87,13 @@ void earth(hittable_list& world) {
 	world.add(make_shared<sphere>(point3(0, 0, 0), 2, earth_surface));
 }
 
+void two_perlin_spheres(hittable_list& world) {
+
+	auto pertext = make_shared<noise_texture>(4);
+	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+	world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
+
+}
 int main(int argc, char* argv[])
 {
 
@@ -98,7 +105,7 @@ int main(int argc, char* argv[])
 
 	hittable_list world;
 	
-	std::cout << " Input a number (0 ~ 2) to select scene:\n";
+	std::cout << " Input a number (0 ~ 3) to select scene:\n";
 	int scene_selection = -1;
 	std::cin >> scene_selection;
 	switch (scene_selection)
@@ -111,6 +118,9 @@ int main(int argc, char* argv[])
 		break;
 	case 2:
 		earth(world);
+		break;
+	case 3:
+		two_perlin_spheres(world);
 		break;
 	default:
 		return 0;
