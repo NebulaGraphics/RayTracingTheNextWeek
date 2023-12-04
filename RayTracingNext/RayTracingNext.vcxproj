@@ -136,6 +136,8 @@
     <ClInclude Include="aabb.h" />
     <ClInclude Include="bvh_node.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="rtw_stb_image.h" />
+    <ClInclude Include="external\stb_image.h" />
     <ClInclude Include="hittable.h" />
     <ClInclude Include="hittable_list.h" />
     <ClInclude Include="interval.h" />
@@ -143,6 +145,7 @@
     <ClInclude Include="ray.h" />
     <ClInclude Include="rt_weekend.h" />
     <ClInclude Include="sphere.h" />
+    <ClInclude Include="texture.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

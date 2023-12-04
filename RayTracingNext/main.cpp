@@ -14,7 +14,7 @@
 #include "hittable_list.h"
 #include "sphere.h"
 #include "bvh_node.h"
-
+#include "texture.h"
 
 #if _DEBUG
 #pragma comment(lib,"opencv_world481d.lib")
@@ -22,12 +22,10 @@
 #pragma comment(lib,"opencv_world481.lib")
 #endif
 
-
-
-void init_world(hittable_list& world)
+void random_sphere(hittable_list& world)
 {
-	auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
+	auto checker = make_shared<checker_texture>(0.1, color(.2, .3, .1), color(.9, .9, .9));
+	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
 
 	for (int a = -11; a < 11; a++) {
 		for (int b = -11; b < 11; b++) {
@@ -74,7 +72,20 @@ void init_world(hittable_list& world)
 
 }
 
+void two_spheres(hittable_list& world)
+{
+	auto checker = make_shared<checker_texture>(0.8, color(.2, .3, .1), color(.9, .9, .9));
 
+	world.add(make_shared<sphere>(point3(0, -10, 0), 10, make_shared<lambertian>(checker)));
+	world.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(checker)));
+}
+
+void earth(hittable_list& world) {
+	auto earth_texture = make_shared<image_texture>("earthmap.jpg");
+	auto earth_surface = make_shared<lambertian>(earth_texture);
+	
+	world.add(make_shared<sphere>(point3(0, 0, 0), 2, earth_surface));
+}
 
 int main(int argc, char* argv[])
 {
@@ -85,10 +96,30 @@ int main(int argc, char* argv[])
 
 #endif
 
-	cv::String window_name = "Raytracing in one weekend";
+	hittable_list world;
+	
+	std::cout << " Input a number (0 ~ 2) to select scene:\n";
+	int scene_selection = -1;
+	std::cin >> scene_selection;
+	switch (scene_selection)
+	{
+	case 0:
+		random_sphere(world);
+		break;
+	case 1:
+		two_spheres(world);
+		break;
+	case 2:
+		earth(world);
+		break;
+	default:
+		return 0;
+	}
+
+	cv::String window_name = "Raytracing: The Next Week";
 
 	cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
-	
+
 	const float aspect_ratio = 16.0f / 9.0f;
 	const int height = 300;
 	const int width = (int)(height * aspect_ratio);
@@ -97,8 +128,7 @@ int main(int argc, char* argv[])
 	std::cout << "width:" << width << ", height: " << height << "\n";
 	int keyCode = 0;
 
-	hittable_list world;
-	init_world(world);
+
 	world = hittable_list(make_shared<bvh_node>(world));
 
 	camera main_camera(
