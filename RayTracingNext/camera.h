@@ -141,8 +141,8 @@ public:
 						std::min(buffer->rows, (i + 1) * tile_size), // row end
 						j * tile_size,                               // col start
 						std::min(buffer->cols, (j + 1) * tile_size), // col end
-						10, // sample count
-						10  // bounce count
+						sample_count, // sample count
+						bounce  // bounce count
 						);
 
 					_tiled_threads.emplace_back(std::move(tracing_thread));
@@ -151,8 +151,7 @@ public:
 
 			join_tiled_threads();
 
-			std::cout << "frame time :" << (clock() - start_clock) / 1000 << " s \n";
-
+			cv::putText(*buffer, "frame time:" + std::to_string((clock() - start_clock) / 1000) + " s ", cv::Point(4, 25), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1.5);
 		});
 
 
@@ -283,8 +282,10 @@ private:
 		double defocus_angle = get_defocus_angle();
 
 		vec3 ray_origin = defocus_angle <= 0 ? position() : defocus_disk_sample();
-		ray r(ray_origin, normalize(ray_direction));
-		return r;
+		auto ray_time = random_double();
+
+		return ray(ray_origin, ray_direction, ray_time);
+		
 	}
 
 	const interval color_intensity = interval(0.000, 0.999);

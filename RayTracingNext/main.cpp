@@ -13,6 +13,7 @@
 #include "hittable_list.h"
 #include "hittable_list.h"
 #include "sphere.h"
+#include "bvh_node.h"
 
 
 #if _DEBUG
@@ -23,7 +24,7 @@
 
 
 
-void init_world(hittable_list& world, camera& camera)
+void init_world(hittable_list& world)
 {
 	auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
 	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
@@ -40,7 +41,11 @@ void init_world(hittable_list& world, camera& camera)
 					// diffuse
 					auto albedo = color::random() * color::random();
 					sphere_material = make_shared<lambertian>(albedo);
+					auto center2 = center + vec3(0, random_double(0, .5), 0);
+
+					world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
 					world.add(make_shared<sphere>(center, 0.2, sphere_material));
+
 				}
 				else if (choose_mat < 0.95) {
 					// metal
@@ -67,12 +72,6 @@ void init_world(hittable_list& world, camera& camera)
 	auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
 	world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
-
-	camera.set_fov(20);
-	camera.set_position(vec3(13, 2, 3));
-	camera.look_at(vec3(0, 0, 0));
-	camera.set_defocus_angle(0.6);
-	camera.set_focus_dist(10);
 }
 
 
@@ -91,7 +90,7 @@ int main(int argc, char* argv[])
 	cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
 	
 	const float aspect_ratio = 16.0f / 9.0f;
-	const int height = 720;
+	const int height = 300;
 	const int width = (int)(height * aspect_ratio);
 	auto buffer = new cv::Mat(height, width, CV_8UC3);
 
@@ -99,18 +98,28 @@ int main(int argc, char* argv[])
 	int keyCode = 0;
 
 	hittable_list world;
+	init_world(world);
+	world = hittable_list(make_shared<bvh_node>(world));
+
 	camera main_camera(
-		vec3{ -2, 2, 1 },               // position
+		vec3{ 13, 2, 3 },               // position
 		view_port{ 0, 0, 1, 1 },        // view port 
 		0.1f,                           // near
 		10000.f,                       // far
-		90.f,                          // fov
+		20.f,                          // fov
 		aspect_ratio                   // aspect ratio
 	);
 
-	init_world(world, main_camera);
 
-	main_camera.render(buffer, world);
+	main_camera.set_fov(20);
+	main_camera.set_position(vec3(13, 2, 3));
+	main_camera.look_at(vec3(0, 0, 0));
+	main_camera.set_defocus_angle(0.02);
+	main_camera.set_focus_dist(10);
+	main_camera.sample_count = 10;
+	main_camera.bounce = 20;
+
+	main_camera.render(buffer, world, 128);
 
 	while (keyCode != 27)
 	{

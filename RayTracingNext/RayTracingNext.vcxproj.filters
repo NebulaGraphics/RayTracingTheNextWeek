@@ -47,5 +47,11 @@
     <ClInclude Include="vec3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="aabb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bvh_node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
