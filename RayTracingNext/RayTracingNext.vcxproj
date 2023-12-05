@@ -136,6 +136,7 @@
     <ClInclude Include="aabb.h" />
     <ClInclude Include="bvh_node.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="constant_medium.h" />
     <ClInclude Include="quad.h" />
     <ClInclude Include="perlin.h" />
     <ClInclude Include="rtw_stb_image.h" />
