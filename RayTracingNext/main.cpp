@@ -296,8 +296,8 @@ int main(int argc, char* argv[])
 	cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
 
 	const float aspect_ratio = 1;
-	const int height = 800;
-	const int tile_count = 16;
+	const int height = 400;
+	const int tile_count = 4;
 	const int width = (int)(height * aspect_ratio);
 	auto buffer = new cv::Mat(height, width, CV_8UC3);
 
