@@ -297,7 +297,7 @@ int main(int argc, char* argv[])
 
 	const float aspect_ratio = 1;
 	const int height = 400;
-	const int tile_count = 4;
+	const int tile_count = 2;
 	const int width = (int)(height * aspect_ratio);
 	auto buffer = new cv::Mat(height, width, CV_8UC3);
 
@@ -321,7 +321,7 @@ int main(int argc, char* argv[])
 	main_camera.look_at(vec3(278, 278, 0));
 	main_camera.set_defocus_angle(0.0);
 	main_camera.set_focus_dist(10);
-	main_camera.sample_count = 10000;
+	main_camera.sample_count = 100;
 	main_camera.bounce = 50;
 	main_camera.background = color(0, 0, 0);
 
